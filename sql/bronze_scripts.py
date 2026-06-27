@@ -9,7 +9,7 @@ engine = get_engine()
 def create_bronze_employees_table():
     try:
         with engine.begin() as connection:
-            connection.execute(text("DROP TABLE IF EXISTS bronze_employees"))
+            connection.execute(text("DROP TABLE bronze_employees"))
             connection.execute(
                 text(
                     """
@@ -20,7 +20,8 @@ def create_bronze_employees_table():
                         age INT,
                         years_of_experience INT,
                         salary INT,
-                        city TEXT
+                        city TEXT,
+                        ingestion_date TIMESTAMP
                     )
                     """
                 )
@@ -42,7 +43,8 @@ def create_bronze_sales_table():
                         employee_id INT,
                         product TEXT,
                         amount NUMERIC(12,2),
-                        date DATE
+                        date DATE,
+                        ingestion_date TIMESTAMP
                     )
                     """
                 )
@@ -63,7 +65,8 @@ def create_bronze_attendace_table():
                     CREATE TABLE bronze_attendance (
                         employee_id INT,
                         date DATE,
-                        attendance_hours INT
+                        attendance_hours INT,
+                        ingestion_date TIMESTAMP
                     )
                     """
                 )

@@ -12,7 +12,7 @@ def load_employees():
         logger.info("[BRONZE][EMPLOYEES] load started")
 
         df = pd.read_csv("data/employees_data.csv")
-
+        df['ingestion_date'] = pd.Timestamp.now()
         with engine.begin() as connection:
             connection.execute(text("TRUNCATE TABLE bronze_employees"))
             df.to_sql("bronze_employees", connection, if_exists="append", index=False)
@@ -34,6 +34,7 @@ def load_sales():
 
             for chunk in pd.read_csv("data/sales.csv", chunksize=chunk_size):
                 try:
+                    chunk['ingestion_date'] = pd.Timestamp.now()
                     chunk.to_sql("bronze_sales", connection, if_exists="append", index=False)
 
                     total += len(chunk)
@@ -55,6 +56,7 @@ def load_attendance():
             connection.execute(text("TRUNCATE TABLE bronze_attendance"))
             for chunk in pd.read_csv("data/attendance.csv", chunksize=chunk_size):
                 try:
+                    chunk['ingestion_date'] = pd.Timestamp.now()
                     chunk.to_sql("bronze_attendance", connection, if_exists="append",index=False)
 
                     total += len(chunk)
