@@ -73,11 +73,11 @@ def create_silver_sales_table():
                         sale_id INT PRIMARY KEY,
                         employee_id INT,
                         product VARCHAR(100),
+                        quantity INT,
                         amount NUMERIC(12,2),
                         date DATE,
-                        sales_without_employees_flag BOOLEAN,
-                        missing_amount_flag BOOLEAN,
                         ingestion_date TIMESTAMP
+                        
                     )
                     """
                 )
@@ -132,6 +132,7 @@ def create_silver_sales_rejected_table():
                         sale_id INTEGER PRIMARY KEY,
                         employee_id INTEGER,
                         product TEXT,
+                        quantity INTEGER,
                         amount NUMERIC,
                         date DATE,
                         rejection_reason TEXT,
