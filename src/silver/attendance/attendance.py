@@ -40,42 +40,42 @@ def clean_bronze_attendance_table():
                 continue
 
             raw_rows += len(df)
-            log_step("RAW_LOAD", df, df, logger)
+            log_step("RAW_LOAD", df, df)
 
             # >> TYPE CONVERSION
             before_conversion_df = df
             df = convert_attendance_types(df)
-            log_step("TYPE_CONVERSION", before_conversion_df, df, logger)
+            log_step("TYPE_CONVERSION", before_conversion_df, df)
 
             # >> SCHEMA VALIDATION
             before_schema_df = df
             validate_schema(df)
-            log_step("SCHEMA_VALIDATION", before_schema_df, df, logger)
+            log_step("SCHEMA_VALIDATION", before_schema_df, df)
 
             # >> REJECTED CAPTURE
             before_rejected_df = df
             load_rejected_attendance(df, silver_employee_df)
-            log_step("REJECTED_CAPTURE", before_rejected_df, df, logger)
+            log_step("REJECTED_CAPTURE", before_rejected_df, df)
 
             # >> FK VALIDATION
             before_fk_df = df
             df = validate_employee_fk(df, silver_employee_df)
-            log_step("FK_VALIDATION", before_fk_df, df, logger)
+            log_step("FK_VALIDATION", before_fk_df, df)
 
             # >> HOURS VALIDATION
             before_hours_df = df
             df = remove_invalid_hours(df)
-            log_step("HOURS_VALIDATION", before_hours_df, df, logger)
+            log_step("HOURS_VALIDATION", before_hours_df, df)
 
             # >> DATE FILTER
             before_date_df = df
             df = remove_future_dates(df)
-            log_step("DATE_FILTER", before_date_df, df, logger)
+            log_step("DATE_FILTER", before_date_df, df)
 
             # >> DERIVED COLUMNS
             before_derived_df = df
             df = add_derived_columns(df)
-            log_step("DERIVED_COLUMNS", before_derived_df, df, logger)
+            log_step("DERIVED_COLUMNS", before_derived_df, df)
 
             logger.info(f"[SILVER][ATTENDANCE] cleaning completed | rows={len(df)}")
 

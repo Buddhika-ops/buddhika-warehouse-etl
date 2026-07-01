@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import sys
 sys.path.append("/opt/airflow")
 
-from src.silver.employees.employees import clean_bronze_employees_table
+from src.silver.employee.employees import clean_bronze_employees_table
 from src.silver.sales.sales import clean_bronze_sales_table
 from src.silver.attendance.attendance import clean_bronze_attendance_table
 

@@ -11,7 +11,7 @@ def load_employees():
     try:
         logger.info("[BRONZE][EMPLOYEES] load started")
 
-        df = pd.read_csv("data/employees_data.csv")
+        df = pd.read_csv("data/employee_data.csv")
         df['ingestion_date'] = pd.Timestamp.now()
         with engine.begin() as connection:
             connection.execute(text("TRUNCATE TABLE bronze_employees"))

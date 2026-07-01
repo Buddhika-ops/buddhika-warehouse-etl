@@ -39,37 +39,37 @@ def clean_bronze_sales_table():
                 continue
 
             raw_rows += len(df)
-            log_step("RAW_LOAD", df, df, logger)
+            log_step("RAW_LOAD", df, df)
 
             # >> NORMALIZATION
             before_normalization_df = df
             df = normalize_invalid_values(df)
-            log_step("NORMALIZATION", before_normalization_df, df, logger)
+            log_step("NORMALIZATION", before_normalization_df, df)
 
             # >> SCHEMA VALIDATION
             before_schema_df = df
             validate_schema(df)
-            log_step("SCHEMA_VALIDATION", before_schema_df, df, logger)
+            log_step("SCHEMA_VALIDATION", before_schema_df, df)
 
             # >> REJECTED CAPTURE
             before_rejected_df = df
             load_rejected_sales(df, silver_employee_df)
-            log_step("REJECTED_CAPTURE", before_rejected_df, df, logger)
+            log_step("REJECTED_CAPTURE", before_rejected_df, df)
 
             # >> RANGE VALIDATION
             before_range_df = df
             df = apply_range_validation(df)
-            log_step("RANGE_VALIDATION", before_range_df, df, logger)
+            log_step("RANGE_VALIDATION", before_range_df, df)
 
             # >> OUTLIER REMOVAL
             before_outlier_df = df
             df = remove_outliers_iqr(df)
-            log_step("OUTLIER_REMOVAL", before_outlier_df, df, logger)
+            log_step("OUTLIER_REMOVAL", before_outlier_df, df)
 
             # >> FK VALIDATION
             before_fk_df = df
             df = validate_employee_fk(df, silver_employee_df["employee_id"])
-            log_step("FK_VALIDATION", before_fk_df, df, logger)
+            log_step("FK_VALIDATION", before_fk_df, df)
 
             df["ingestion_date"] = pd.Timestamp.now()
 

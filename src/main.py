@@ -9,15 +9,19 @@ from sql.silver_scripts import (
     create_silver_sales_rejected_table,
     create_silver_attendance_table,
 )
-from src.silver.employees.employees import clean_bronze_employees_table
+from src.silver.employee.employees import clean_bronze_employees_table
 from src.silver.sales.sales import clean_bronze_sales_table
 from src.silver.attendance.attendance import clean_bronze_attendance_table
+from data.data_generator import sales, employees,attendance
 
+
+from src.gold.run_gold_pipeline import gold_pipline
 logger = get_logger()
 
-
+from src.silver.run_silver_pipeline import silver_pipline
 def main():
     logger.info("[PIPELINE] STARTED")
+   
 
     # logger.info("[BRONZE] table creation started")
     # create_bronze_employees_table()
@@ -36,16 +40,21 @@ def main():
     # create_silver_employees_rejected_table()
     # create_silver_sales_table()
     # create_silver_sales_rejected_table()
-    create_silver_attendance_table()
+    # create_silver_attendance_table()
     # logger.info("[SILVER] table creation completed")
 
-    logger.info("[SILVER] data cleaning and loading started")
-    clean_bronze_employees_table()
-    clean_bronze_sales_table()
-    clean_bronze_attendance_table()
-    logger.info("[SILVER] data loading completed")
+    # logger.info("[SILVER] data cleaning and loading started")
+    # clean_bronze_employees_table()
+    # clean_bronze_sales_table()
+    # clean_bronze_attendance_table()
+    # logger.info("[SILVER] data loading completed")
 
-    logger.info("[PIPELINE] COMPLETED")
+        # logger.info("[PIPELINE] COMPLETED")
+
+    silver_pipline()
+
+
+    # gold_pipline()    
 
 if __name__ == "__main__":
     main()

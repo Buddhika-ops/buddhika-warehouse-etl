@@ -21,7 +21,6 @@ def create_silver_employees_table():
                     years_of_experience INTEGER,
                     salary NUMERIC,
                     city TEXT,
-                    join_date_estimated INTEGER,
                     ingestion_date TIMESTAMP
                     )
                     """

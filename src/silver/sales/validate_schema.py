@@ -20,7 +20,7 @@ def validate_schema(df):
             f"[SCHEMA VALIDATION] Missing required columns: {missing_columns}"
         )
     
-    # >>Only sale_id is truly critical — missing means we can't identify the record
+    # >> Only sale_id is truly critical — missing means we can't identify the record
     critical_cols = ["sale_id"]
     for col in critical_cols:
         null_count = df[col].isnull().sum()
