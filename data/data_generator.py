@@ -2,7 +2,7 @@ import pandas as pd
 import random
 import numpy as np
 from faker import Faker
-
+from datetime import date
 faker = Faker()
 
 
@@ -194,7 +194,7 @@ def sales():
             product,
             quantity,
             amount,
-            faker.date_between(start_date="-10y", end_date="today")
+            faker.date_between(start_date=date(2025, 7, 1), end_date=date(2026, 7, 1))
         ])
  
     df = pd.DataFrame(

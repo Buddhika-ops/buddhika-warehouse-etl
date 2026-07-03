@@ -5,7 +5,7 @@ from src.silver.common.validators import (
     )
 from src.silver.transformations.employees.load_employees import upsert_employees
 from src.silver.common.rejected import capture_rejected
-from src.db_engine import get_engine
+from utils.db_engine import get_engine
 from src.silver.utils.bronze_reader import get_bronze_table_reader
 from datetime import datetime
 import logging

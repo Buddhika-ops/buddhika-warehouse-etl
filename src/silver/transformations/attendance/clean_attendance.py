@@ -7,7 +7,7 @@ from src.silver.common.validators import (
     validate_fk,
     validate_no_future_date
 )
-from src.db_engine import get_engine
+from utils.db_engine import get_engine
 from src.silver.common.rejected import capture_rejected
 from src.silver.transformations.attendance.load_attendance import upsert_attendance
 from datetime import datetime

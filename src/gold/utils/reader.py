@@ -1,14 +1,10 @@
 import pandas as pd
-from src.db_engine import get_engine
 
-engine = get_engine()
-
-def get_silver_table_reader(table_name):
+def get_silver_table_reader(table_name, engine):
     read_query =f"""
     SELECT * 
     FROM {table_name};
     """
-
     df = pd.read_sql(read_query,engine)
 
-    return df
+    return df.copy()

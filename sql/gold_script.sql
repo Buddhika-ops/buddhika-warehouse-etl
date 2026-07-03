@@ -6,7 +6,16 @@ CREATE TABLE IF NOT EXISTS gold_dim_employees (
     experience_years INT,
     monthly_salary   DECIMAL(10, 2),
     city             VARCHAR(100),
-    join_date        DATE
+    age_group        VARCHAR(20),
+    salary_band      VARCHAR(20),
+    experience_level VARCHAR(20),
+    updated_at       DATE
+);
+
+CREATE TABLE gold_dim_product (
+    product_id     SERIAL PRIMARY KEY,
+    product_name   VARCHAR UNIQUE NOT NULL,
+    category       VARCHAR
 );
 
 

@@ -1,4 +1,4 @@
-from src.db_engine import get_engine
+from utils.db_engine import get_engine
 from sqlalchemy import text
 def row_count():
     tables = [

@@ -10,8 +10,6 @@ from sql.silver_scripts import (
     create_silver_attendance_table,
 )
 from src.silver.transformations.employees.clean_employees import employees as clean_bronze_employees_table
-from src.silver.sales.sales import clean_bronze_sales_table
-from src.silver.attendance.attendance import clean_bronze_attendance_table
 from data.data_generator import sales
 
 
@@ -51,10 +49,10 @@ def main():
 
         # logger.info("[PIPELINE] COMPLETED")
 
-    silver_pipline()
+    # silver_pipline()
 
 
-    # gold_pipline()    
+    gold_pipline()    
 
 if __name__ == "__main__":
     main()

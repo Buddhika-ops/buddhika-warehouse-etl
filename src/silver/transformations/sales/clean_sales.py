@@ -1,5 +1,5 @@
 import pandas as pd
-from src.db_engine import get_engine
+from utils.db_engine import get_engine
 from src.silver.utils.bronze_reader import get_bronze_table_reader
 from src.silver.common.validators import (
     validate_schema,
@@ -134,14 +134,14 @@ def sales():
         engine= engine
     )
 
-    mask_valid = validate_outliers_iqr(df_silver= df_silver,column= 'amount')
-    df_silver= capture_rejected(
-        df = df_silver,
-        mask_valid= mask_valid,
-        reason= 'amount outlier (IQR)',
-        reject_table= 'silver_sales_rejected',
-        engine= engine
-    )
+    # mask_valid = validate_outliers_iqr(df_silver= df_silver,column= 'amount')
+    # df_silver= capture_rejected(
+    #     df = df_silver,
+    #     mask_valid= mask_valid,
+    #     reason= 'amount outlier (IQR)',
+    #     reject_table= 'silver_sales_rejected',
+    #     engine= engine
+    # )
 
     df_silver['ingestion_date'] = datetime.utcnow()
     

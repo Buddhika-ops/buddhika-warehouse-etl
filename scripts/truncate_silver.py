@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from sqlalchemy import text
-from src.db_engine import get_engine
+from utils.db_engine import get_engine
 from utils.logger import get_logger
 
 logger = get_logger()
