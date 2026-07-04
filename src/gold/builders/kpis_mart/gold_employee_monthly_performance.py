@@ -1,5 +1,4 @@
 import pandas as pd
-import logging
 from utils.db_engine import get_engine
 from src.gold.utils.reader import get_silver_table_reader
 from src.gold.utils.writer import write_gold_data_df
@@ -7,14 +6,13 @@ from src.gold.utils.writer import write_gold_data_df
 
 
 engine = get_engine()
-logger = logging.getLogger(__name__) 
 
-def gold_employee_monthly_performance():
+def gold_employee_monthly_performance(logger,batch_id):
     try:
         gold_fact_attendance = get_silver_table_reader('gold_fact_attendance',engine= engine)
 
         if gold_fact_attendance.empty:
-            logger.warning("[gold_employee_monthly_performance] No data found in gold_fact_attendance")
+            logger.warning(f"[GOLD][gold_employee_monthly_performance][{batch_id}] No data found in gold_fact_attendance")
             return
         
         gold_fact_sales = get_silver_table_reader('gold_fact_sales',engine= engine)
@@ -102,10 +100,9 @@ def gold_employee_monthly_performance():
         
        
         write_gold_data_df('gold_employee_monthly_performance',df=df_gold,engine=engine)
-
-        logger.info(f'[gold_employee_monthly_performance] cleaning completed | rows={len(df_gold)}')
+        return len(df_gold)
 
     except Exception as e:
-        logger.error(f"[GOLD BUILD FAILED: gold_employee_monthly_performance] {e}")
+        logger.error(f"[GOLD BUILD FAILED: gold_employee_monthly_performance][{batch_id}] {e}")
         raise
     

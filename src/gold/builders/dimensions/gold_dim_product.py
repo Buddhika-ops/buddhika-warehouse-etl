@@ -4,7 +4,7 @@ from src.gold.utils.writer import write_gold_data_df
 
 engine = get_engine()
 
-def gold_dim_product():
+def gold_dim_product(logger,batch_id):
     try:
         category_map = {
             "Laptop": "Computers",
@@ -30,7 +30,7 @@ def gold_dim_product():
         df_gold = get_silver_table_reader('silver_sales',engine= engine)
         
         if df_gold.empty:
-            logger.warning("[gold_dim_product] No data found in silver_sales")
+            logger.warning(f"[GOLD][gold_dim_product][{batch_id}] No data found in silver_sales")
             return
 
         df_gold = (
@@ -57,6 +57,6 @@ def gold_dim_product():
         return len(df_gold)
     
     except Exception as e:
-        logger.error(f"[GOLD BUILD FAILED: gold_dim_product] {e}")
+        logger.error(f"[GOLD BUILD FAILED: gold_dim_product][{batch_id}] {e}")
         raise
 

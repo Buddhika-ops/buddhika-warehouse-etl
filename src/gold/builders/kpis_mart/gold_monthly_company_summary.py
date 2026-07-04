@@ -1,5 +1,4 @@
 import pandas as pd
-import logging
 from utils.db_engine import get_engine
 from src.gold.utils.reader import get_silver_table_reader
 from src.gold.utils.writer import write_gold_data_df
@@ -7,14 +6,13 @@ from src.gold.utils.writer import write_gold_data_df
 
 
 engine = get_engine()
-logger = logging.getLogger(__name__) 
 
-def gold_monthly_company_summary():
+def gold_monthly_company_summary(logger,batch_id):
     try:
         gold_fact_sales = get_silver_table_reader('gold_fact_sales',engine= engine)
 
         if gold_fact_sales.empty:
-            logger.warning("[gold_monthly_company_summary] No data found in gold_fact_sales")
+            logger.warning(f"[GOLD][gold_monthly_company_summary][{batch_id}] No data found in gold_fact_sales")
             return
 
         gold_dim_date = get_silver_table_reader('gold_dim_date',engine= engine)
@@ -34,7 +32,7 @@ def gold_monthly_company_summary():
         ).agg(
             total_sales_amount = ('total_amount',   'sum'),
             total_quantity_sold= ('quantity',    'sum'),
-            total_transactions = ('sale_id',    'count'),
+            total_transactions = ('sale_id',    'nunique'),
             active_employees = ('employee_id',  'nunique')
         ).reset_index()
 
@@ -67,7 +65,7 @@ def gold_monthly_company_summary():
 
         df_gold['mom_sales_growth_pct'] = (
             df_gold['total_sales_amount']
-            .pct_change()
+            .pct_change(fill_method=None)
             .mul(100)
             .round(2)
         )
@@ -80,7 +78,7 @@ def gold_monthly_company_summary():
             'active_employees':0,
             'avg_attendance_rate':0,
             'total_overtime_hours':0,
-            'mom_sales_growth_pct':0
+            'mom_sales_growth_pct': 0
         })
 
         df_gold =df_gold[[
@@ -96,10 +94,9 @@ def gold_monthly_company_summary():
         ]]
 
         write_gold_data_df('gold_monthly_company_summary',df=df_gold,engine=engine)
-
-        logger.info(f'[gold_monthly_company_summary] cleaning completed | rows={len(df_gold)}')
-
+        return len(df_gold)
+    
     except Exception as e:
-        logger.error(f"[GOLD BUILD FAILED: gold_monthly_company_summary] {e}")
+        logger.error(f"[GOLD BUILD FAILED: gold_monthly_company_summary][{batch_id}] {e}")
         raise
     

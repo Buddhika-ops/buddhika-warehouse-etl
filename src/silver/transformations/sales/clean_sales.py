@@ -9,15 +9,14 @@ from src.silver.common.validators import (
     validate_range,
     validate_outliers_iqr
     )
-import logging
 from datetime import datetime
 from src.silver.common.rejected import capture_rejected
 from src.silver.transformations.sales.load_sales import upsert_sales
+from utils.watermark import update_watermark
 
-logger = logging.getLogger(__name__) 
 engine = get_engine()
 
-def sales():
+def sales(logger,batch_id):
 
     required_columns =[
         'sale_id',
@@ -27,14 +26,14 @@ def sales():
         'amount',
         'date'
     ]
-
-    df = get_bronze_table_reader('bronze_sales',engine = engine )
-    df_silver = df.copy()
+    
+    df_silver = get_bronze_table_reader('bronze_sales',engine = engine,watermark= "silver_sales")
+    
     before = len(df_silver)
+    logger.info(f'[SILVER][SALES][{batch_id}] cleaning started | rows={before}')
     
     if before == 0:
-        logger.info('[SILVER][SALES] Chunk is empty, skipping.')
-        logger.info('[DATA QUALITY SCORE] 0.00%')
+        logger.warning('[SILVER][SALES] Chunk is empty, skipping.')
         return
     
     validate_schema(required_columns,df_silver)
@@ -49,15 +48,17 @@ def sales():
 
     mask_valid = ~df_silver.duplicated('sale_id', keep = 'first')
     df_silver = capture_rejected(
+        logger = logger,
         df = df_silver,
         mask_valid= mask_valid,
         reason= 'duplicate sales',
         reject_table= 'silver_sales_rejected',
         engine= engine
     )
-    valid_id = get_bronze_table_reader('silver_employees',engine=engine)['employee_id']
+    valid_id = pd.read_sql('select employee_id from silver_employees',engine)['employee_id']
     mask_valid = validate_fk(df_silver=df_silver,column='employee_id', valid_id=valid_id)
     df_silver= capture_rejected(
+        logger = logger,
         df = df_silver,
         mask_valid= mask_valid,
         reason= 'employee_id not found in silver_employees',
@@ -70,6 +71,7 @@ def sales():
     date_mask = validate_not_null(df_silver= df_silver , column= 'date')
     mask_valid = employee_id_mask & date_mask
     df_silver= capture_rejected(
+        logger = logger,
         df = df_silver,
         mask_valid= mask_valid,
         reason= 'missing employee_id or date',
@@ -81,6 +83,7 @@ def sales():
     amount_mask = validate_not_null(df_silver= df_silver , column= 'amount')
     mask_valid = quantity_mask & amount_mask
     df_silver= capture_rejected(
+        logger = logger,
         df = df_silver,
         mask_valid= mask_valid,
         reason= 'missing quantity_mask or amount',
@@ -90,6 +93,7 @@ def sales():
     
     mask_valid = validate_not_null(df_silver= df_silver , column= 'product')
     df_silver= capture_rejected(
+        logger = logger,
         df = df_silver,
         mask_valid= mask_valid,
         reason= 'missing product',
@@ -99,6 +103,7 @@ def sales():
 
     mask_valid = validate_no_future_date(df_silver=df_silver,column='date')
     df_silver= capture_rejected(
+        logger = logger,
         df = df_silver,
         mask_valid= mask_valid,
         reason= 'future date',
@@ -108,6 +113,7 @@ def sales():
 
     mask_valid =  validate_range(df_silver=df_silver,column='quantity',min_value= 0)
     df_silver= capture_rejected(
+        logger = logger,
         df = df_silver,
         mask_valid= mask_valid,
         reason= ' quantity of range',
@@ -117,6 +123,7 @@ def sales():
 
     mask_valid = validate_range(df_silver=df_silver,column= 'amount',min_value= 0)
     df_silver= capture_rejected(
+        logger = logger,
         df = df_silver,
         mask_valid= mask_valid,
         reason= ' amount of range',
@@ -127,6 +134,7 @@ def sales():
 
     mask_valid = validate_outliers_iqr(df_silver= df_silver,column= 'quantity')
     df_silver= capture_rejected(
+        logger = logger,
         df = df_silver,
         mask_valid= mask_valid,
         reason= 'quantity outlier (IQR)',
@@ -136,6 +144,7 @@ def sales():
 
     # mask_valid = validate_outliers_iqr(df_silver= df_silver,column= 'amount')
     # df_silver= capture_rejected(
+    #     logger = logger,
     #     df = df_silver,
     #     mask_valid= mask_valid,
     #     reason= 'amount outlier (IQR)',
@@ -145,15 +154,23 @@ def sales():
 
     df_silver['ingestion_date'] = datetime.utcnow()
     
-    logger.info(f'[SILVER][SALES] cleaning completed | rows={len(df_silver)}')
+    logger.info(f'[SILVER][SALES][{batch_id}] cleaning completed | rows={len(df_silver)}')
 
     if len(df_silver) == 0:
-        logger.info('[SILVER][SALES] no valid rows to load, skipping insert')
+        logger.info(f'[SILVER][SALES][{batch_id}] no valid rows to load, skipping insert')
         return
     
 
     try:
+        logger.info(f'[SILVER][SALES][{batch_id}] loading start')
+        update_watermark(table_name='silver_sales',status='RUNNING',batch_id=batch_id,row_count=len(df_silver))
+
         upsert_sales(df_silver, engine)
+
+        update_watermark(table_name='silver_sales',status='SUCCESS',batch_id=batch_id,row_count=len(df_silver))
+
+        logger.info(f'[SILVER][SALES][{batch_id}] loading completed')
     except Exception as e:
-        logger.error(f'[SILVER][SALES] load failed | error={e}')
+        logger.error(f'[SILVER LOAD FAILD: silver_sales][{batch_id}]{e}')
+        update_watermark(table_name='silver_sales',status='FAILD',batch_id=batch_id,row_count=len(df_silver))
         raise

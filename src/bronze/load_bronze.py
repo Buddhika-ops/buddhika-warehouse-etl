@@ -6,7 +6,7 @@ from utils.db_engine import get_engine
 engine = get_engine()
 
 
-def load_employees(logger):
+def load_employees(logger,batch_id):
     try:
     
         df = pd.read_csv("data/employee_data.csv")
@@ -14,13 +14,13 @@ def load_employees(logger):
         with engine.begin() as connection:
             df.to_sql("bronze_employees", connection, if_exists="append", index=False)
 
-        logger.info(f"[BRONZE][EMPLOYEES] rows_written={len(df)}")
+        logger.info(f"[BRONZE][EMPLOYEES][{batch_id}] rows_written={len(df)}")
     except Exception as e:
-        logger.error(f"[BRONZE][EMPLOYEES] load failed | error={e}")
+        logger.error(f"[BRONZE][EMPLOYEES][{batch_id}] load failed | error={e}")
 
 
 
-def load_sales(logger):
+def load_sales(logger,batch_id):
     try:
 
         chunk_size = 50000
@@ -31,13 +31,13 @@ def load_sales(logger):
                 chunk['ingestion_date'] = pd.Timestamp.now()
                 chunk.to_sql("bronze_sales", connection, if_exists="append", index=False)
                 total += len(chunk)      
-        logger.info(f"[BRONZE][SALES] rows_written={total}")
+        logger.info(f"[BRONZE][SALES][{batch_id}] rows_written={total}")
 
     except Exception as e:
-        logger.error(f"[BRONZE][SALES] load failed | error={e}")
+        logger.error(f"[BRONZE][SALES][{batch_id}] load failed | error={e}")
 
 
-def load_attendance(logger):
+def load_attendance(logger,batch_id):
     chunk_size = 50000
     total = 0
 
@@ -48,7 +48,7 @@ def load_attendance(logger):
                 chunk['ingestion_date'] = pd.Timestamp.now()
                 chunk.to_sql("bronze_attendance", connection, if_exists="append",index=False)
                 total += len(chunk)                   
-        logger.info(f"[BRONZE][ATTENDANCE] rows_written={total}")
+        logger.info(f"[BRONZE][ATTENDANCE][{batch_id}] rows_written={total}")
 
     except Exception as e:
-        logger.error(f"[BRONZE][ATTENDANCE] load failed | error={e}")
+        logger.error(f"[BRONZE][ATTENDANCE][{batch_id}] load failed | error={e}")

@@ -5,7 +5,7 @@ from src.gold.utils.writer import write_gold_data_df
 from utils.db_engine import get_engine
 
 engine = get_engine()
-def gold_dim_employees(logger):
+def gold_dim_employees(logger,batch_id):
     try:
         dept_code_map = {
             "Inside Sales": "INS",
@@ -19,7 +19,7 @@ def gold_dim_employees(logger):
         df_gold = get_silver_table_reader('silver_employees',engine=engine)
        
         if df_gold.empty:
-            logger.warning("[GOLD][DIM_EMPLOYEES] No data found in silver_employees")
+            logger.warning(f"[GOLD][DIM_EMPLOYEES][{batch_id}] No data found in silver_employees")
             return     
         
         df_gold = df_gold.rename(columns={
@@ -74,5 +74,5 @@ def gold_dim_employees(logger):
         return len(df_gold)
     
     except Exception as e:
-        logger.error(f"[GOLD BUILD FAILED: gold_dim_employees] {e}")
+        logger.error(f"[GOLD BUILD FAILED: gold_dim_employees][{batch_id}] {e}")
         raise

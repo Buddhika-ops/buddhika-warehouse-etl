@@ -1,5 +1,4 @@
-import pandas as pd
-import logging
+
 from utils.db_engine import get_engine
 from src.gold.utils.reader import get_silver_table_reader
 from src.gold.utils.writer import write_gold_data_df
@@ -7,14 +6,14 @@ from src.gold.utils.writer import write_gold_data_df
 
 
 engine = get_engine()
-logger = logging.getLogger(__name__) 
 
-def gold_product_performance():
+
+def gold_product_performance(logger,batch_id):
     try:
         gold_fact_sales = get_silver_table_reader('gold_fact_sales',engine= engine)
 
         if gold_fact_sales.empty:
-            logger.warning("[gold_product_performance] No data found in gold_fact_sales")
+            logger.warning(f"[GOLD][gold_product_performance][{batch_id}] No data found in gold_fact_sales")
             return
                
        
@@ -58,8 +57,8 @@ def gold_product_performance():
 
         write_gold_data_df('gold_product_performance',df=df_gold,engine=engine)
 
-        logger.info(f'[gold_product_performance] cleaning completed | rows={len(df_gold)}')
+        return len(df_gold)
 
     except Exception as e:
-        logger.error(f"[GOLD BUILD FAILED: gold_product_performance] {e}")
+        logger.error(f"[GOLD BUILD FAILED: gold_product_performance][{batch_id}] {e}")
         raise

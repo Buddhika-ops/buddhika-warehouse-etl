@@ -1,6 +1,5 @@
 import pandas as pd
 from src.silver.utils.bronze_reader import get_bronze_table_reader
-import logging
 from src.silver.common.validators import (
     validate_schema,
     validate_not_null,
@@ -11,25 +10,27 @@ from utils.db_engine import get_engine
 from src.silver.common.rejected import capture_rejected
 from src.silver.transformations.attendance.load_attendance import upsert_attendance
 from datetime import datetime
+from utils.watermark import update_watermark
 
 
 engine = get_engine()
-logger = logging.getLogger(__name__) 
 
-def attendance():
+def attendance(logger,batch_id):
+    
+
     required_columns =[
         'employee_id', 
         'date', 
         'attendance_hours'
     ]
 
-    df = get_bronze_table_reader('bronze_attendance',engine=engine)
-    df_silver = df.copy()
+    df_silver = get_bronze_table_reader('bronze_attendance',engine=engine,watermark='silver_attendance')    
     before = len(df_silver)
 
+    logger.info(f'[SILVER][ATTENDANCE][{batch_id}] cleaning started | rows={before}')
+    
     if before == 0:
-        logger.info('[SILVER][ATTENDANCE] Chunk is empty, skipping.')
-        logger.info('[DATA QUALITY SCORE] 0.00%')
+        logger.warning('[SILVER][ATTENDANCE] Chunk is empty, skipping.')
         return
     
     validate_schema(required_columns, df_silver)
@@ -40,6 +41,7 @@ def attendance():
 
     mask_valid = ~df_silver.duplicated(subset=['employee_id','date'], keep='first')
     df_silver = capture_rejected(
+        logger = logger,
         df=df_silver,
         mask_valid=mask_valid,
         reason='duplicate attendance',
@@ -51,6 +53,7 @@ def attendance():
     date_mask = validate_not_null(df_silver, 'date')
     mask_valid = employee_id_mask & date_mask
     df_silver = capture_rejected(
+        logger = logger,
         df=df_silver,
         mask_valid=mask_valid,
         reason='missing employee_id or date',
@@ -58,9 +61,10 @@ def attendance():
         engine=engine
     )
 
-    valid_id = get_bronze_table_reader('silver_employees', engine=engine)['employee_id']
+    valid_id = pd.read_sql('select employee_id from silver_employees',engine)['employee_id']
     mask_valid = validate_fk(df_silver, 'employee_id', valid_id)
     df_silver = capture_rejected(
+        logger = logger,
         df=df_silver,
         mask_valid=mask_valid,
         reason='employee_id not found in silver_employees',
@@ -71,6 +75,7 @@ def attendance():
 
     mask_valid = df_silver['attendance_hours'].between(0,24)
     df_silver = capture_rejected(
+        logger = logger,
         df=df_silver,
         mask_valid=mask_valid,
         reason='attendance_hours out of range',
@@ -80,6 +85,7 @@ def attendance():
 
     mask_valid = validate_no_future_date(df_silver, 'date')
     df_silver = capture_rejected(
+        logger = logger,
         df=df_silver,
         mask_valid=mask_valid,
         reason='future date',
@@ -92,16 +98,26 @@ def attendance():
 
     df_silver['ingestion_date'] = datetime.utcnow()
 
-    logger.info(f'[SILVER][ATTENDANCE] cleaning completed | rows={len(df_silver)}')
+    logger.info(f'[SILVER][ATTENDANCE][{batch_id}] cleaning completed | rows={len(df_silver)}')
 
     if len(df_silver) == 0:
-        logger.info('[SILVER][ATTENDANCE] no valid rows to load, skipping insert')
+        logger.info(f'[SILVER][ATTENDANCE][{batch_id}] no valid rows to load, skipping insert')
         return
     
     try:
+
+        logger.info(f'[SILVER][ATTENDANCE][{batch_id}] loading start')
+        update_watermark(table_name='silver_attendance',status='RUNNING',batch_id=batch_id,row_count=len(df_silver))
+
         upsert_attendance(df_silver, engine)
+
+        update_watermark(table_name='silver_attendance',status='SUCCESS',batch_id=batch_id,row_count=len(df_silver))
+
+        logger.info(f'[SILVER][ATTENDANCE][{batch_id}] loading completed')
+
     except Exception as e:
-        logger.error(f'[SILVER][ATTENDANCE] load failed | error={e}')
+        logger.error(f'[SILVER LOAD FAILD: silver_attendance][{batch_id}] {e}')
+        update_watermark(table_name='silver_attendance',status='FAILD',batch_id=batch_id,row_count=len(df_silver))
         raise
 
 

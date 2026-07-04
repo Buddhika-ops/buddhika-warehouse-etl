@@ -21,8 +21,6 @@ def upsert_attendance(df_silver,engine):
                     )
                     ON CONFLICT (employee_id, date)
                     DO UPDATE SET
-                        employee_id     = EXCLUDED.employee_id,
-                        date            = EXCLUDED.date,
                         attendance_hours = EXCLUDED.attendance_hours,
                         ingestion_date  = EXCLUDED.ingestion_date,
                         attendance_status = EXCLUDED.attendance_status,

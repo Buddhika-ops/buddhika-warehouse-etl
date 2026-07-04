@@ -1,20 +1,20 @@
 import pandas as pd
-import logging
 from utils.db_engine import get_engine
 from src.gold.utils.reader import get_silver_table_reader
 from src.gold.utils.writer import write_gold_data_df
 from datetime import datetime
+from utils.watermark import update_watermark
 
 
 engine = get_engine()
-logger = logging.getLogger(__name__) 
 
-def gold_fact_sales():
+
+def gold_fact_sales(logger,batch_id):
     try:
-        df_gold = get_silver_table_reader('silver_sales',engine= engine)
+        df_gold = get_silver_table_reader('silver_sales',engine= engine, watermark= 'gold_fact_sales')
 
         if df_gold.empty:
-            logger.warning("[gold_fact_sales] No data found in silver_sales")
+            logger.warning(f"[GOLD][gold_fact_sales][{batch_id}] No data found in silver_sales")
             return
         
         gold_dim_employee = get_silver_table_reader('gold_dim_employees',engine=engine)
@@ -58,11 +58,14 @@ def gold_fact_sales():
 
         ]]
 
+        update_watermark(table_name='gold_fact_sales',status='RUNNING',batch_id=batch_id,row_count=len(df_gold))
 
         write_gold_data_df('gold_fact_sales',df=df_gold,engine=engine)
 
-        logger.info(f'[gold_fact_sales] cleaning completed | rows={len(df_gold)}')
+        update_watermark(table_name='gold_fact_sales',status='SUCCESS',batch_id=batch_id,row_count=len(df_gold))
+        return len(df_gold)
 
     except Exception as e:
-        logger.error(f"[GOLD BUILD FAILED: gold_fact_sales] {e}")
+        logger.error(f"[GOLD BUILD FAILED: gold_fact_sales][{batch_id}] {e}")
+        update_watermark(table_name='gold_fact_sales',status='FAILD',batch_id=batch_id,row_count=len(df_gold))
         raise

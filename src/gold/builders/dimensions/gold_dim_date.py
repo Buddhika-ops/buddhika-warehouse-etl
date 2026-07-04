@@ -6,7 +6,7 @@ from src.gold.utils.writer import write_gold_data_df
 engine = get_engine()
 
 
-def gold_dim_date(logger):
+def gold_dim_date(logger,batch_id):
     try:
         df_silver_sales = get_silver_table_reader('silver_sales',engine= engine)
         df_silver_attendence = get_silver_table_reader('silver_attendance',engine= engine)
@@ -34,5 +34,5 @@ def gold_dim_date(logger):
         return len(df_gold)
     
     except Exception as e:
-        logger.error(f"[GOLD BUILD FAILED: gold_dim_date] {e}")
+        logger.error(f"[GOLD BUILD FAILED: gold_dim_date][{batch_id}] {e}")
         raise

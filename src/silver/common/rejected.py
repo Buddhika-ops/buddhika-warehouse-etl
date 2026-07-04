@@ -3,11 +3,12 @@ import logging
 logger = logging.getLogger(__name__) 
 
 def capture_rejected(
+    logger,    
     df,
     mask_valid,
     reason,
     reject_table=None,
-    engine=None
+    engine=None,
 ):
     
     invalid_rows = df.loc[~mask_valid].copy()
@@ -21,8 +22,8 @@ def capture_rejected(
             index=False
         )
     
-    logger.info(
-            f"[{reject_table.upper()}] rejected {len(invalid_rows)} rows | reason={reason}"
-        )
+        logger.info(
+                f"[SILVER][{reject_table.upper()}] rejected {len(invalid_rows)} rows | reason={reason}"
+            )
     
     return df.loc[mask_valid].copy()
