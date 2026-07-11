@@ -58,6 +58,11 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    WAREHOUSE_DB_HOST: ${WAREHOUSE_DB_HOST:-localhost}
+    WAREHOUSE_DB_PORT: ${WAREHOUSE_DB_PORT:-5432}
+    WAREHOUSE_DB_NAME: ${WAREHOUSE_DB_NAME:-warehouse}
+    WAREHOUSE_DB_USER: ${WAREHOUSE_DB_USER:-buddhika}
+    WAREHOUSE_DB_PASSWORD: ${WAREHOUSE_DB_PASSWORD:-password}
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-pandas sqlalchemy psycopg2-binary requests great-expectations dbt-postgres}
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags

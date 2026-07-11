@@ -1,7 +1,28 @@
+# Python
 __pycache__/
-*.py[cod]
-*.log
+*.pyc
 .venv/
 .env
+
+# Airflow
+airflow/logs/
+airflow_setup/logs/
+logs/
+airflow/plugins/__pycache__/
+airflow/.env
+
+# dbt
+dbt_project/target/
+dbt_project/logs/
+
+# Mac
 .DS_Store
-logs/*.log
+
+# VS Code
+.vscode/
+
+# Pytest
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
