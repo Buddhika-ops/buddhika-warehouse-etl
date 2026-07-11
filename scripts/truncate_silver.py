@@ -8,16 +8,16 @@ from sqlalchemy import text
 from utils.db_engine import get_engine
 from utils.logger import get_logger
 
-# logger = get_logger()
+logger = get_logger(__name__,'delete')
 engine = get_engine()
 
 
 def truncate_silver_tables():
     silver_tables = [
-        'bronze_attendance',
-        'bronze_employees',
-        'bronze_sales',
-        'etl_metadata ',
+        " bronze_attendance",              
+         "bronze_employees",                  
+         "bronze_sales",                                             
+         "etl_metadata" ,
         "silver_employees",
         "silver_employees_rejected",
         "silver_sales",
@@ -27,27 +27,19 @@ def truncate_silver_tables():
         
     ]
 
-    print("[UTILS] Truncating all Silver tables...")
+    logger.info("[UTILS] Truncating all Silver tables...")
     try:
         with engine.begin() as connection:
             for table in silver_tables:
                 connection.execute(text(f"TRUNCATE TABLE {table} CASCADE"))
-                print(f"[UTILS] Truncated table: {table}")
+                logger.info(f"[UTILS] Truncated table: {table}")
 
-            # Reset watermarks in etl_metadata
-            connection.execute(
-                text(
-                    """
-                    UPDATE etl_metadata
-                    SET last_loaded_timestamp = '2020-01-01 00:00:00'
-                    """
-                )
-            )
-            print("[UTILS] Reset all ETL metadata watermarks to 2020-01-01 00:00:00")
+           
+            logger.info("[UTILS] Reset all ETL metadata watermarks to 2020-01-01 00:00:00")
 
-        print("[UTILS] All Silver tables truncated successfully.")
+        logger.info("[UTILS] All Silver tables truncated successfully.")
     except Exception as e:
-        print(f"[UTILS] Truncation failed | error={e}")
+        logger.error(f"[UTILS] Truncation failed | error={e}")
 
 
 if __name__ == "__main__":

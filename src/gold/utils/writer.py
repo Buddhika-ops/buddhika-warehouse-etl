@@ -4,7 +4,7 @@ def write_gold_data_df(table_name,df,engine):
     df.to_sql(
         table_name,
         engine,
-        if_exists = 'append',
+        if_exists = 'replace',
         chunksize = 100000,
         index=False
     )

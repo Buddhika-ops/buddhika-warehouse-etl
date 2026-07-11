@@ -24,6 +24,14 @@ faker = Faker()
 #         'Channel Sales',
 #         'Customer Success & Renewals'
 #     ]
+#     citys=[
+#         "Kandy",
+#         "Colombo",
+#         "Galle",
+#         "Jaffna",
+#         "Kurunagala"
+#     ]
+
 #     MIN_WORKING_AGE = 18
 #     salary_bands = {
 #         'Inside Sales':                (35000, 75000),
@@ -36,6 +44,7 @@ faker = Faker()
     
 #     for i in range(500):
 #         department = random.choice(departments)
+#         city = random.choice(citys)
 #         if random.random() < 0.02:
 #             department = None
     
@@ -66,7 +75,8 @@ faker = Faker()
     
 #         # Round to nearest 500 to mimic real-world pay bands
 #         salary = round(salary / 500) * 500
-    
+          
+        
 #         if random.random() < 0.05:
 #             salary = None
     
@@ -77,7 +87,7 @@ faker = Faker()
 #             age,
 #             years_of_experience,
 #             salary,
-#             faker.city()
+#             city
 #         ])
     
 #     df = pd.DataFrame(
@@ -99,7 +109,7 @@ faker = Faker()
 
 
 
-  # load employees and filter to Sales department only
+#   load employees and filter to Sales department only
 
 def sales():
     sales_data = []
@@ -169,7 +179,7 @@ def sales():
     emp_to_dept = dict(zip(employees_df["employee_id"], employees_df["department"]))
     employee_ids = list(emp_to_dept.keys())
  
-    for i in range(1000000):
+    for i in range(50000):
         employee_id = random.choice(employee_ids)
         department = emp_to_dept[employee_id]
  
@@ -194,7 +204,7 @@ def sales():
             product,
             quantity,
             amount,
-            faker.date_between(start_date=date(2025, 7, 1), end_date=date(2026, 7, 1))
+            faker.date_between(start_date=date(2019, 1, 1), end_date=date(2020, 1, 1))
         ])
  
     df = pd.DataFrame(
@@ -212,47 +222,44 @@ def sales():
                 #  after that you can comment out the code to avoid regenerating the data every time you run the script.
 #  #  ------------------------------------------------------------------------------------------------------------------------
 
-# def attendance():
-#     employees_df = pd.read_csv("data/employee_data.csv")
-#     employee_ids = employees_df["employee_id"].dropna().astype(int).tolist()
- 
-#     # Build the list of weekdays (Mon-Fri) over the last year — attendance only
-#     # makes sense on actual working days, not weekends.
-#     end_date = pd.Timestamp.today().normalize()
-#     start_date = end_date - pd.DateOffset(years=1)
-#     all_days = pd.date_range(start_date, end_date, freq="D")
-#     workdays = [d for d in all_days if d.weekday() < 5]  # Mon=0 ... Fri=4
- 
-#     attendance_data = []
- 
-#     for employee_id in employee_ids:
-#         # Each employee has their own slight "tendency" - some are consistently
-#         # punctual/full-day, some run a bit short on average. Adds realistic
-#         # person-to-person variation instead of every row being independent.
-#         personal_avg = np.random.normal(loc=8.0, scale=0.4)
- 
-#         for day in workdays:
-#             # Absence: ~4% chance employee didn't log hours that day (sick, leave, etc.)
-#             if random.random() < 0.04:
-#                 hours = None
-#             else:
-#                 # Most days cluster tightly around a normal ~8hr workday,
-#                 # with occasional early leave / overtime as natural variation.
-#                 hours = np.random.normal(loc=personal_avg, scale=1.0)
-#                 hours = round(max(0, min(hours, 12)), 1)  # clip to a sane 0-12hr range
- 
-#                 # Small chance of a half-day (planned leave, appointment, etc.)
-#                 if random.random() < 0.03:
-#                     hours = round(hours / 2, 1)
- 
-#             attendance_data.append([
-#                 employee_id,
-#                 day.date(),
-#                 hours
-#             ])
- 
-#     df = pd.DataFrame(attendance_data, columns=[
-#         "employee_id", "date", "attendance_hours"
-#     ])
-#     df.to_csv("data/attendance.csv", index=False)
-#     print("Attendance created")
+def attendance():
+    employees_df = pd.read_csv("data/employee_data.csv")
+    employee_ids = employees_df["employee_id"].dropna().astype(int).tolist()
+
+    # Fixed date range (not relative to today anymore)
+    start_date = date(2019, 1, 1)
+    end_date = date(2020, 1, 1)
+    all_days = pd.date_range(start_date, end_date, freq="D")
+
+    attendance_data = []
+    for employee_id in employee_ids:
+        # Each employee has their own slight "tendency" - some are consistently
+        # punctual/full-day, some run a bit short on average. Adds realistic
+        # person-to-person variation instead of every row being independent.
+        personal_avg = np.random.normal(loc=8.0, scale=0.4)
+
+        for day in all_days:
+            # Absence: ~4% chance employee didn't log hours that day (sick, leave, etc.)
+            if random.random() < 0.04:
+                hours = None
+            else:
+                # Most days cluster tightly around a normal ~8hr workday,
+                # with occasional early leave / overtime as natural variation.
+                hours = np.random.normal(loc=personal_avg, scale=1.0)
+                hours = round(max(0, min(hours, 12)), 1)  # clip to a sane 0-12hr range
+
+                # Small chance of a half-day (planned leave, appointment, etc.)
+                if random.random() < 0.03:
+                    hours = round(hours / 2, 1)
+
+            attendance_data.append([
+                employee_id,
+                day.date(),
+                hours
+            ])
+
+    df = pd.DataFrame(attendance_data, columns=[
+        "employee_id", "date", "attendance_hours"
+    ])
+    df.to_csv("data/attendance.csv", index=False)
+    print("Attendance created")
