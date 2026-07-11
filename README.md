@@ -2,6 +2,9 @@
 
 This repository contains an end-to-end data warehouse ETL project that loads CSV-based source data into PostgreSQL, transforms it through bronze, silver, and gold layers, and orchestrates the workflow using Apache Airflow and dbt.
 
+<img width="1191" height="681" alt="Untitled Diagram-Page-2 drawio-2" src="https://github.com/user-attachments/assets/a545eb07-74ce-4090-b294-131f2ec79289" />
+
+
 ## Technologies used
 
 The project uses the following technologies and libraries:
